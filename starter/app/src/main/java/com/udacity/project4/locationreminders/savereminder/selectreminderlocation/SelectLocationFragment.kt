@@ -232,8 +232,6 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
     @SuppressLint("MissingPermission")
     private fun setupMap(location: Location)
     {
-        if(LocationUtility.hasLocationPermissions(this.requireContext()))
-        {
             map.isMyLocationEnabled = true
             val lat = location?.latitude
             val lang = location?.longitude
@@ -250,7 +248,7 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
             }
 
-        }
+
     }
 
     private fun requestPermissions() {
