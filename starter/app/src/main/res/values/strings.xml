@@ -13,6 +13,7 @@
     <string name="terrain_map">Terrain Map</string>
     <string name="err_enter_title">Please enter title</string>
     <string name="err_select_location">Please select location</string>
+    <string name="save">Save</string>
 
     <!-- Error strings -->
 </resources>

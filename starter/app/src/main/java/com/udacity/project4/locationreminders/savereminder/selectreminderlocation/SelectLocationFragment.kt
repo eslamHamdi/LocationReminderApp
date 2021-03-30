@@ -5,6 +5,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.IntentSender
 import android.content.res.Resources
+import android.graphics.Color
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +19,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
@@ -138,6 +140,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
                 map.mapType = GoogleMap.MAP_TYPE_TERRAIN
 
             }
+            R.id.save -> onLocationSelected()
+
             else -> return super.onOptionsItemSelected(item)
         }
 
@@ -149,6 +153,16 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
 
         if (p0 != null) {
             map = p0
+            //adding mapstyle
+            setMapStyle(map)
+
+            map.setOnMapLongClickListener {
+                getUserLocation()
+                location?.let {
+                    val latlng = LatLng(location!!.latitude, location!!.longitude)
+                    handleMapLongClick(latlng)
+                }
+            }
 
         }
 
@@ -184,8 +198,6 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
                         setupMap(location!!)
                     }
 
-
-
                 }
             }
              fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
@@ -217,10 +229,12 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
 
     }
 
-    private fun setupMap(location:Location)
+    @SuppressLint("MissingPermission")
+    private fun setupMap(location: Location)
     {
         if(LocationUtility.hasLocationPermissions(this.requireContext()))
         {
+            map.isMyLocationEnabled = true
             val lat = location?.latitude
             val lang = location?.longitude
             Log.d("location", "onMapReady: $lat + $lang")
@@ -236,9 +250,6 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
             }
 
-
-            //adding mapstyle
-            setMapStyle(map)
         }
     }
 
@@ -304,6 +315,31 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
             Log.e(null, "Can't find style. Error: ", e)
         }
     }
+    private fun addMarker(latLng: LatLng)
+    {
+        val markerOptions = MarkerOptions().position(latLng)
+        map.addMarker(markerOptions)
+    }
+
+    private fun addCircle(latLng: LatLng, radius: Float)
+    {
+        val circleOptions = CircleOptions()
+        circleOptions.center(latLng)
+        circleOptions.radius(radius.toDouble())
+        circleOptions.strokeColor(Color.argb(255, 255, 0, 0))
+        circleOptions.fillColor(Color.argb(64, 255, 0, 0))
+        circleOptions.strokeWidth(4f)
+        map.addCircle(circleOptions)
+    }
+    private fun handleMapLongClick(latLng: LatLng)
+    {
+        map.clear()
+        addMarker(latLng)
+        addCircle(latLng,200f )
+
+    }
+
+
 }
 
 
@@ -319,3 +355,4 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
 private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
 private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
 private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
+

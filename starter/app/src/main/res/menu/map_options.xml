@@ -16,4 +16,8 @@
         android:id="@+id/terrain_map"
         android:title="@string/terrain_map"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/save"
+        android:title="@string/save"
+        app:showAsAction="ifRoom"/>
 </menu>
