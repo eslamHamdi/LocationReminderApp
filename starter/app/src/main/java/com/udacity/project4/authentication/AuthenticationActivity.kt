@@ -56,6 +56,7 @@ class AuthenticationActivity : AppCompatActivity() {
                 .setAvailableProviders(providers)
                 .setLogo(R.drawable.map)
                 .setTheme(R.style.loginTheme)
+
                 .build(),
             SIGN_IN_RESULT_CODE)
     }
@@ -79,6 +80,7 @@ class AuthenticationActivity : AppCompatActivity() {
                 // sign-in flow using the back button. Otherwise check
                 // response.getError().getErrorCode() and handle the error.
                 // ...
+                this.onBackPressedDispatcher.onBackPressed()
             }
         }
 

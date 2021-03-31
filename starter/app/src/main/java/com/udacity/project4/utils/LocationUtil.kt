@@ -49,14 +49,11 @@ private lateinit var pendingIntent:PendingIntent
                 .build()
     }
 
-    fun getPendingIntent(context:Context): PendingIntent?
+    fun getPendingIntent(context:Context): PendingIntent
     {
-        if (pendingIntent != null)
-        {
-            return pendingIntent
-        }
+
         val intent = Intent(context, GeofenceBroadcastReceiver::class.java)
-        pendingIntent = PendingIntent.getBroadcast(context, 2607, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         return pendingIntent
     }
 
@@ -73,4 +70,6 @@ private lateinit var pendingIntent:PendingIntent
         }
         return e.localizedMessage
     }
+
+    const val requestCode =2608
 }

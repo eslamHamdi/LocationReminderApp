@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.content.IntentSender
 import android.content.res.Resources
 import android.graphics.Color
+import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
@@ -36,24 +37,27 @@ import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import org.koin.android.ext.android.inject
 
 
-class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermissions.PermissionCallbacks {
+class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermissions.PermissionCallbacks
+{
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
     private lateinit var map: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    lateinit var locationCallback: LocationCallback
-    lateinit var mapFragment:SupportMapFragment
+     var locationCallback: LocationCallback? =null
+    lateinit var mapFragment: SupportMapFragment
+    lateinit var geocoder: Geocoder
 
-    var location:Location?=null
+    var location: Location? = null
 
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    ): View?
+    {
         binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_select_location, container, false)
+                DataBindingUtil.inflate(inflater, R.layout.fragment_select_location, container, false)
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
@@ -61,7 +65,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
 
 
         fusedLocationClient =
-            LocationServices.getFusedLocationProviderClient(this.requireActivity())
+                LocationServices.getFusedLocationProviderClient(this.requireActivity())
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
@@ -72,59 +76,74 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
         mapFragment.getMapAsync(this@SelectLocationFragment)
 
 
-
-
-
 //        TODO: call this function after the user confirms on the selected location
-       // onLocationSelected()
+        binding.saveButton.setOnClickListener {
+            onLocationSelected()
+        }
 
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?)
+    {
         super.onViewCreated(view, savedInstanceState)
 
         requestPermissions()
+        geocoder = Geocoder(this.requireContext())
 
 
     }
 
 
-    private fun onLocationSelected() {
+    private fun onLocationSelected()
+    {
         //        TODO: When the user confirms on the selected location,
         //         send back the selected location details to the view model
         //         and navigate back to the previous fragment to save the reminder and add the geofence
 
         _viewModel.latitude.value = location?.latitude
         _viewModel.longitude.value = location?.longitude
+        _viewModel.reminderSelectedLocationStr.value = geocoder.getFromLocation(location?.latitude!!,location?.longitude!!,1).first().toString()
         _viewModel.navigationCommand.value = NavigationCommand.Back
 
 
     }
 
-    override fun onStart()
+    override fun onResume()
     {
-        super.onStart()
+        super.onResume()
         getUserLocation()
+        Log.d("onStart", " started")
     }
 
-    override fun onPause() {
+    override fun onPause()
+    {
         super.onPause()
         stopLocationUpdates()
+        Log.d("Pause", "onPause: ")
     }
 
-    private fun stopLocationUpdates() {
-        fusedLocationClient.removeLocationUpdates(locationCallback)
+    private fun stopLocationUpdates()
+    {
+        locationCallback?.let {
+            fusedLocationClient.removeLocationUpdates(it)
+        }
+
     }
 
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater)
+    {
         inflater.inflate(R.menu.map_options, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.normal -> map.mapType = GoogleMap.MAP_TYPE_NORMAL
+    override fun onOptionsItemSelected(item: MenuItem): Boolean
+    {
+        when (item.itemId)
+        {
+            R.id.normal -> {
+                map.mapType = GoogleMap.MAP_TYPE_NORMAL
+            }
             R.id.hybrid_map ->
             {
                 map.mapType = GoogleMap.MAP_TYPE_HYBRID
@@ -140,7 +159,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
                 map.mapType = GoogleMap.MAP_TYPE_TERRAIN
 
             }
-            R.id.save -> onLocationSelected()
 
             else -> return super.onOptionsItemSelected(item)
         }
@@ -149,18 +167,20 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
 
     }
 
-    override fun onMapReady(p0: GoogleMap?) {
+    override fun onMapReady(p0: GoogleMap?)
+    {
 
-        if (p0 != null) {
+        if (p0 != null)
+        {
             map = p0
             //adding mapstyle
             setMapStyle(map)
+            onPoiPress(map)
 
             map.setOnMapLongClickListener {
-                getUserLocation()
-                location?.let {
-                    val latlng = LatLng(location!!.latitude, location!!.longitude)
-                    handleMapLongClick(latlng)
+
+                it?.let {
+                    handleMapLongClick(it)
                 }
             }
 
@@ -169,62 +189,67 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
     }
 
     @SuppressLint("MissingPermission")
-    fun getUserLocation() {
-if (LocationUtility.hasLocationPermissions(this.requireContext()))
-{
-
-   val locationRequest = LocationRequest.create().apply {
-        interval = 10000
-        fastestInterval = 5000
-        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        Log.d(null, "setuserlocation: entered1")
-    }
-
-    val builder = LocationSettingsRequest.Builder()
-    builder.addLocationRequest(locationRequest)
-    val client: SettingsClient = LocationServices.getSettingsClient(this.requireActivity())
-    val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-    task.addOnSuccessListener {
-
-      val flag = it.locationSettingsStates?.isLocationUsable
-        if (flag == true)
+    fun getUserLocation()
+    {
+        if (LocationUtility.hasLocationPermissions(this.requireContext()))
         {
-            locationCallback = object : LocationCallback()
-            {
-                override fun onLocationResult(locationResult: LocationResult)
-                {
-                    location = locationResult.lastLocation
-                    location?.let {
-                        setupMap(location!!)
-                    }
 
+            val locationRequest = LocationRequest.create().apply {
+                interval = 10000
+                fastestInterval = 5000
+                smallestDisplacement = 100f
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                Log.d(null, "getuserlocation: entered1")
+            }
+
+            val builder = LocationSettingsRequest.Builder()
+            builder.addLocationRequest(locationRequest)
+            val client: SettingsClient = LocationServices.getSettingsClient(this.requireActivity())
+            val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+            task.addOnSuccessListener {
+
+                val flag = it.locationSettingsStates?.isLocationUsable
+                if (flag == true)
+                {
+                    locationCallback = object : LocationCallback()
+                    {
+                        override fun onLocationResult(locationResult: LocationResult)
+                        {
+                            location = locationResult.lastLocation
+                            location?.let {
+                                setupMap(location!!)
+                            }
+
+                        }
+                    }
+                    fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback!!, Looper.getMainLooper())
+                }
+
+            }
+
+            task.addOnFailureListener { exception ->
+                if (exception is ResolvableApiException)
+                {
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    Log.d(null, "setuserlocation: location failure")
+                    try
+                    {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        exception.startResolutionForResult(this.requireActivity(), 0x1)
+                    } catch (sendEx: IntentSender.SendIntentException)
+                    {
+                        // Ignore the error.
+                    }
                 }
             }
-             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+
+
+        } else
+        {
+            requestPermissions()
         }
-
-    }
-
-    task.addOnFailureListener { exception ->
-        if (exception is ResolvableApiException){
-            // Location settings are not satisfied, but this can be fixed
-            // by showing the user a dialog.
-            Log.d(null, "setuserlocation: location failure")
-            try {
-                // Show the dialog by calling startResolutionForResult(),
-                // and check the result in onActivityResult().
-                exception.startResolutionForResult(this.requireActivity(), 0x1)
-            } catch (sendEx: IntentSender.SendIntentException) {
-                // Ignore the error.
-            }
-        }
-    }
-
-
-
-}else{
-    requestPermissions()
-}
 
 
     }
@@ -232,37 +257,51 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
     @SuppressLint("MissingPermission")
     private fun setupMap(location: Location)
     {
-            map.isMyLocationEnabled = true
-            val lat = location?.latitude
-            val lang = location?.longitude
-            Log.d("location", "onMapReady: $lat + $lang")
-            if (lat !=null && lang != null)
-            {
+        map.isMyLocationEnabled = true
+        val lat = location.latitude
+        val lang = location.longitude
+        Log.d("location", "setupMap: $lat + $lang")
+        if (lat != null && lang != null)
+        {
 
-                val currentLocation = LatLng(lat, lang)
-                val zoom = 18f
-                // zoom to the user location after taking his permission
-                // add style to the map
-                // put a marker to location that the user selected
-                map.addMarker(MarkerOptions().position(currentLocation))
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
-            }
+            val currentLocation = LatLng(lat, lang)
+            val zoom = 18f
+            // zoom to the user location after taking his permission
+            // put a marker to location that the user selected
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
+            map.addMarker(MarkerOptions().position(currentLocation))
+
+        }
 
 
     }
+    private fun onPoiPress(map:GoogleMap)
+    {
 
-    private fun requestPermissions() {
-        if(LocationUtility.hasLocationPermissions(requireContext())) {
+        map.setOnPoiClickListener {
+            map.clear()
+            map.addMarker(MarkerOptions().position(it.latLng)
+                    .title(it.name))
+                    .showInfoWindow()
+        }
+    }
+
+    private fun requestPermissions()
+    {
+        if (LocationUtility.hasLocationPermissions(requireContext()))
+        {
             return
         }
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+        {
             EasyPermissions.requestPermissions(
                     this,
                     "You need to accept location permissions to use this app.",
                     REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE,
                     Manifest.permission.ACCESS_FINE_LOCATION
             )
-        } else {
+        } else
+        {
             EasyPermissions.requestPermissions(
                     this,
                     "You need to accept location permissions to use this app.",
@@ -273,15 +312,19 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
         }
     }
 
-    override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
-        if(EasyPermissions.somePermissionPermanentlyDenied(this, perms.toString())) {
+    override fun onPermissionsDenied(requestCode: Int, perms: List<String>)
+    {
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms.toString()))
+        {
             SettingsDialog.Builder(this.requireContext()).build().show()
-        } else {
+        } else
+        {
             requestPermissions()
         }
     }
 
-    override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
+    override fun onPermissionsGranted(requestCode: Int, perms: List<String>)
+    {
         return
     }
 
@@ -290,13 +333,16 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
             requestCode: Int,
             permissions: Array<out String>,
             grantResults: IntArray
-    ) {
+    )
+    {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 
-    private fun setMapStyle(map: GoogleMap) {
-        try {
+    private fun setMapStyle(map: GoogleMap)
+    {
+        try
+        {
             // Customize the styling of the base map using a JSON object defined
             // in a raw resource file.
             val success = map.setMapStyle(
@@ -306,13 +352,16 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
                     )
             )
 
-            if (!success) {
+            if (!success)
+            {
                 Log.e(null, "Style parsing failed.")
             }
-        } catch (e: Resources.NotFoundException) {
+        } catch (e: Resources.NotFoundException)
+        {
             Log.e(null, "Can't find style. Error: ", e)
         }
     }
+
     private fun addMarker(latLng: LatLng)
     {
         val markerOptions = MarkerOptions().position(latLng)
@@ -329,28 +378,23 @@ if (LocationUtility.hasLocationPermissions(this.requireContext()))
         circleOptions.strokeWidth(4f)
         map.addCircle(circleOptions)
     }
+
     private fun handleMapLongClick(latLng: LatLng)
     {
         map.clear()
         addMarker(latLng)
-        addCircle(latLng,200f )
+        addCircle(latLng, 200f)
+        location?.let {
+            it.latitude = latLng.latitude
+            it.longitude = latLng.longitude
+        }
 
     }
 
 
 }
 
-
-
-
-
-
-
-
-
-
-
 private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
 private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
-private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
+
 
