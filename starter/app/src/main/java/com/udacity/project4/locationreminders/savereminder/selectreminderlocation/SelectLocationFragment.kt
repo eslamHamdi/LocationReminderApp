@@ -14,6 +14,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -34,7 +35,11 @@ import com.udacity.project4.utils.LocationUtility
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
+import java.util.*
 
 
 class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermissions.PermissionCallbacks
@@ -50,6 +55,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
     lateinit var geocoder: Geocoder
 
     var location: Location? = null
+    var POI:String? = null
 
 
     override fun onCreateView(
@@ -101,10 +107,48 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
         //         send back the selected location details to the view model
         //         and navigate back to the previous fragment to save the reminder and add the geofence
 
-        _viewModel.latitude.value = location?.latitude
-        _viewModel.longitude.value = location?.longitude
-        _viewModel.reminderSelectedLocationStr.value = geocoder.getFromLocation(location?.latitude!!,location?.longitude!!,1).first().toString()
-        _viewModel.navigationCommand.value = NavigationCommand.Back
+if (location != null)
+{
+    lifecycleScope.launch(Dispatchers.Main) {
+        var itemLocation = ""
+        withContext(Dispatchers.IO) {
+            itemLocation=
+                    try
+                    {
+                        geocoder.getFromLocation(location?.latitude!!, location?.longitude!!, 1).first()
+                                .run {
+                                    val sb = StringBuilder()
+                                    for (i in 0 until this.maxAddressLineIndex)
+                                    {
+                                        sb.append(this.getAddressLine(i)).append("\n")
+                                    }
+                                    //sb.append(this.locality).append("\n")
+                                    //sb.append(this.thoroughfare).append("\n")
+                                    sb.append(POI ?:this.locality ?: "NotAvailable" )
+                                    //sb.append(this.countryName)
+                                    sb.toString()
+                                }
+                    } catch (e: Exception)
+                    {
+
+                        Log.d("adressList", "onLocationSelected: $e.localizedMessage")
+                        e.localizedMessage!!
+                    }
+
+        }
+
+
+
+        _viewModel.reminderSelectedLocationStr.postValue(itemLocation)
+        _viewModel.latitude.postValue(location?.latitude)
+        _viewModel.longitude.postValue(location?.longitude)
+
+        _viewModel.navigationCommand.postValue(NavigationCommand.Back)
+
+
+    }
+}
+
 
 
     }
@@ -119,7 +163,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
     override fun onPause()
     {
         super.onPause()
-        stopLocationUpdates()
+       // stopLocationUpdates()
         Log.d("Pause", "onPause: ")
     }
 
@@ -141,7 +185,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
     {
         when (item.itemId)
         {
-            R.id.normal -> {
+            R.id.normal ->
+            {
                 map.mapType = GoogleMap.MAP_TYPE_NORMAL
             }
             R.id.hybrid_map ->
@@ -275,11 +320,20 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
 
 
     }
-    private fun onPoiPress(map:GoogleMap)
+
+    private fun onPoiPress(map: GoogleMap)
     {
 
         map.setOnPoiClickListener {
             map.clear()
+            POI = it.name.filter {
+                Character.UnicodeBlock.of(it) == Character.UnicodeBlock.of('A')
+
+            }.trimIndent()
+            if (POI.isNullOrEmpty())
+            {
+                POI = it.name
+            }
             map.addMarker(MarkerOptions().position(it.latLng)
                     .title(it.name))
                     .showInfoWindow()

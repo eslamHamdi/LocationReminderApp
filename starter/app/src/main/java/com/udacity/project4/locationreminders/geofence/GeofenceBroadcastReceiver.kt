@@ -26,6 +26,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver()
 //TODO: implement the onReceive method to receive the geofencing events at the background
 
 
+
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
 
         if (geofencingEvent.hasError())
@@ -35,7 +36,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver()
             return
         }
 
-        if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL)
+        if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER)
         {
             Log.d("Broadcast", "GeofenceEntered")
             val serviceIntent = Intent(context,GeofenceTransitionsJobIntentService::class.java)

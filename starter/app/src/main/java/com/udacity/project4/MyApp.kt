@@ -31,8 +31,8 @@ class MyApp : Application() {
             single {
                 //This view model is declared singleton to be used across multiple fragments
                 SaveReminderViewModel(
-                    get(),
-                    get() as ReminderDataSource
+                        get(),
+                        get() as ReminderDataSource
                 )
             }
             single { RemindersLocalRepository(get()) as ReminderDataSource }

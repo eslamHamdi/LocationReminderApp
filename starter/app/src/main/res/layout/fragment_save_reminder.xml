@@ -39,7 +39,7 @@
 
         <TextView
             android:id="@+id/selectLocation"
-            android:layout_width="match_parent"
+            android:layout_width="204dp"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
@@ -49,20 +49,26 @@
             android:gravity="center_vertical"
             android:text="@string/reminder_location"
             android:textColor="@color/black"
+            app:layout_constraintEnd_toStartOf="@+id/selectedLocation"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/reminderDescription" />
 
         <TextView
             android:id="@+id/selectedLocation"
-            android:layout_width="wrap_content"
+            android:layout_width="204dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_normal"
             android:layout_marginEnd="@dimen/margin_normal"
             android:layout_marginRight="@dimen/margin_normal"
             android:text="@{viewModel.reminderSelectedLocationStr}"
             android:textColor="@color/black"
-            app:layout_constraintBottom_toBottomOf="@id/selectLocation"
+            android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/selectLocation"
+            app:layout_constraintEnd_toStartOf="@+id/selectLocation"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/selectLocation"
+            app:layout_constraintTop_toBottomOf="@id/reminderDescription"
             tools:text="Location" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
