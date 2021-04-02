@@ -52,7 +52,7 @@ class AuthenticationActivity : AppCompatActivity() {
         startActivityForResult(
             AuthUI.getInstance()
                 .createSignInIntentBuilder()
-                .setIsSmartLockEnabled(false)
+                .setIsSmartLockEnabled(true)
                 .setAvailableProviders(providers)
                 .setLogo(R.drawable.map)
                 .setTheme(R.style.loginTheme)

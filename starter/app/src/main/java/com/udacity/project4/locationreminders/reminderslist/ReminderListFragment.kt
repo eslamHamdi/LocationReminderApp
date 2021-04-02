@@ -34,7 +34,16 @@ class ReminderListFragment : BaseFragment() {
         setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
 
-        binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
+        binding.refreshLayout.setOnRefreshListener {
+            _viewModel.loadReminders()
+        }
+
+        _viewModel.showNoData.observe(viewLifecycleOwner,{
+
+                binding.refreshLayout.isRefreshing = false
+
+        }
+        )
 
         return binding.root
     }
@@ -84,6 +93,12 @@ class ReminderListFragment : BaseFragment() {
                         startActivity(intent)
                         this.requireActivity().finish()
                     }
+            }
+            R.id.clear ->{
+
+                _viewModel.deleteAllItems()
+                _viewModel.loadReminders()
+
             }
         }
         return super.onOptionsItemSelected(item)

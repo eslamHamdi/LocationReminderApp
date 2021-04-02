@@ -38,11 +38,11 @@ private lateinit var pendingIntent:PendingIntent
                 .build()
     }
 
-    fun getGeofence(ID: String?, latLng: LatLng, radius: Float, transitionTypes: Int): Geofence?
+    fun getGeofence(ID: String, latLng: LatLng, radius: Float, transitionTypes: Int): Geofence?
     {
         return Geofence.Builder()
                 .setCircularRegion(latLng.latitude, latLng.longitude, radius)
-                .setRequestId(ID!!)
+                .setRequestId(ID)
                 .setTransitionTypes(transitionTypes)
                 .setLoiteringDelay(5000)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)

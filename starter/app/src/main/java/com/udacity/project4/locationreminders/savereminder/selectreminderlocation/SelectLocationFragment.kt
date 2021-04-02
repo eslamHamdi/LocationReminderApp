@@ -262,6 +262,7 @@ if (location != null)
                         {
                             location = locationResult.lastLocation
                             location?.let {
+                                map.clear()
                                 setupMap(location!!)
                             }
 
@@ -302,6 +303,7 @@ if (location != null)
     @SuppressLint("MissingPermission")
     private fun setupMap(location: Location)
     {
+       // map.clear()
         map.isMyLocationEnabled = true
         val lat = location.latitude
         val lang = location.longitude
@@ -315,6 +317,7 @@ if (location != null)
             // put a marker to location that the user selected
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
             map.addMarker(MarkerOptions().position(currentLocation))
+            _viewModel.showToast.value = "Select a location or Place of Interest"
 
         }
 

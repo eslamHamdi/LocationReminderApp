@@ -5,4 +5,9 @@
         android:id="@+id/logout"
         android:title="@string/logout"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/clear"
+        android:title="@string/clearlist"
+        app:showAsAction="never" />
 </menu>

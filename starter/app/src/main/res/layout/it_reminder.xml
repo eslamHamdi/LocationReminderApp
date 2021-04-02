@@ -41,18 +41,19 @@
                 android:layout_height="wrap_content"
                 android:text="@{item.description}"
                 android:textSize="@dimen/text_size_small"
+                android:maxLines="10"
                 app:layout_constraintStart_toStartOf="@id/title"
-                app:layout_constraintTop_toBottomOf="@id/title"
+                app:layout_constraintTop_toBottomOf="@id/locate"
                 tools:text="Description" />
 
             <TextView
+                android:id="@+id/locate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@{item.location}"
                 android:textColor="@color/colorAccent"
                 android:textSize="@dimen/text_size_small"
-                app:layout_constraintBottom_toBottomOf="@+id/description"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/title"
                 tools:text="Location" />
