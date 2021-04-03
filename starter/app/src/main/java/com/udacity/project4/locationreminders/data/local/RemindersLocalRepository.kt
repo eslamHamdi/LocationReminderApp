@@ -13,15 +13,19 @@ import kotlinx.coroutines.*
  * @param remindersDao the dao that does the Room db operations
  * @param ioDispatcher a coroutine dispatcher to offload the blocking IO tasks
  */
+
 class RemindersLocalRepository(
     private val remindersDao: RemindersDao,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ReminderDataSource {
 
+
+
     /**
      * Get the reminders list from the local db
      * @return Result the holds a Success with all the reminders or an Error object with the error message
      */
+
     override suspend fun getReminders(): Result<List<ReminderDTO>> = withContext(ioDispatcher) {
         return@withContext try {
             Result.Success(remindersDao.getReminders())

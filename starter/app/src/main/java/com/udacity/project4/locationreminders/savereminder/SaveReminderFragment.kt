@@ -60,7 +60,7 @@ class SaveReminderFragment : BaseFragment() {
                 NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
         }
 
-        geofencingClient = LocationServices.getGeofencingClient(this.requireActivity());
+        geofencingClient = LocationServices.getGeofencingClient(this.requireActivity())
         binding.saveReminder.setOnClickListener {
             val title = _viewModel.reminderTitle.value
             val description = _viewModel.reminderDescription.value

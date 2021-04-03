@@ -18,6 +18,7 @@ buildscript {
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"
         classpath 'com.google.gms:google-services:4.3.5'
 
+
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -56,7 +57,7 @@ ext {
     dexMakerVersion = '2.12.1'
     coroutinesVersion = '1.4.3'
     roomVersion = '2.2.6'
-    koinVersion = '2.0.1'
+    koinVersion = '2.2.2'
     truthVersion = '1.1.2'
     junitVersion = '4.13.2'
     androidXTestCoreVersion = '1.4.0-alpha05'

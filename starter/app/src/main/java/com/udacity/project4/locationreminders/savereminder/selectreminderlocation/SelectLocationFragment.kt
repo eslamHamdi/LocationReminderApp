@@ -317,7 +317,7 @@ if (location != null)
             // put a marker to location that the user selected
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
             map.addMarker(MarkerOptions().position(currentLocation))
-            _viewModel.showToast.value = "Select a location or Place of Interest"
+            _viewModel.showToast.postValue( "Select a location or Place of Interest")
 
         }
 
