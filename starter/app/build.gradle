@@ -15,7 +15,7 @@ android {
         targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "com.udacity.project4.di.KoinTestRunner"
         multiDexEnabled true
     }
     buildTypes {
@@ -30,6 +30,10 @@ android {
     testOptions.unitTests {
         includeAndroidResources = true
         returnDefaultValues = true
+    }
+
+    testOptions {
+        animationsDisabled = true
     }
 
     //dataBinding {
@@ -84,9 +88,9 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
 
     //Koin
-    //implementation "org.koin:koin-core:$koinVersion"
+   implementation "org.koin:koin-core:$koinVersion"
 // Koin extended & experimental features
-   // implementation "org.koin:koin-core-ext:$koinVersion"
+    implementation "org.koin:koin-core-ext:$koinVersion"
 // Koin for Unit tests
     testImplementation "org.koin:koin-test:$koinVersion"
     implementation "org.koin:koin-androidx-scope:$koinVersion"

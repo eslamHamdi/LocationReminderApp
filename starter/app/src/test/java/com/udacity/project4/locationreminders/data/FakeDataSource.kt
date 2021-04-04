@@ -2,6 +2,7 @@ package com.udacity.project4.locationreminders.data
 
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 
 //Use FakeDataSource that acts as a test double to the LocalDataSource
 class FakeDataSource : ReminderDataSource {
@@ -9,11 +10,36 @@ class FakeDataSource : ReminderDataSource {
 
 //    TODO: Create a fake data source to act as a double to the real data source
 
-    var dataList = mutableListOf<ReminderDTO>()
+
+
+    val item1 =ReminderDTO("1","mock","here",5.0,5.0,"a")
+    val item2 =ReminderDTO("1","mock","here",6.0,5.0,"b")
+    val item3 =ReminderDTO("1","mock","here",7.0,5.0,"c")
+
+    var dataList = mutableListOf<ReminderDTO>(item1,item2,item3)
+
+
+
+
+    private var shouldReturnError = false
+
+    fun setReturnError(value: Boolean) {
+        shouldReturnError = value
+    }
 
     override suspend fun getReminders(): Result<List<ReminderDTO>> {
 
-        return Result.Success(dataList)
+        return if (shouldReturnError)
+        {
+            Result.Error("error")
+        }
+
+        else{
+            Result.Success(dataList)
+        }
+
+
+
     }
 
     override suspend fun saveReminder(reminder: ReminderDTO) {
@@ -25,17 +51,38 @@ class FakeDataSource : ReminderDataSource {
        val item = dataList.find {
            it.id == id
         }
-        if (id != null)
+        if (shouldReturnError)
         {
-            return Result.Success(item!!)
-        }else
             return Result.Error("error")
+
+        }
+        item?.let {
+            return Result.Success(item)
+        }
+
+        return Result.Error("Could not find reminder")
+
 
     }
 
     override suspend fun deleteAllReminders() {
 
         dataList.clear()
+    }
+
+    fun DTOtoReminderDataItem(list:MutableList<ReminderDTO>):List<ReminderDataItem>
+    {
+        return list.map {
+            //map the reminder data from the DB to the be ready to be displayed on the UI
+            ReminderDataItem(
+                    it.title,
+                   it.description,
+                   it.location,
+                    it.latitude,
+                   it.longitude,
+                    it.id
+            )
+        }
     }
 
 
