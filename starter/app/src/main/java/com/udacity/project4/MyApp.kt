@@ -9,13 +9,12 @@ import com.udacity.project4.locationreminders.reminderslist.RemindersListViewMod
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
-import org.koin.core.component.KoinApiExtension
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
 class MyApp : Application() {
 
-    @KoinApiExtension
+
     override fun onCreate() {
         super.onCreate()
 

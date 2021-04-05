@@ -1,4 +1,4 @@
-package com.udacity.project4.util
+package com.udacity.project4.androidutil
 
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
