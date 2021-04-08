@@ -88,6 +88,7 @@ class RemindersListViewModelTest {
 
     }
 
+    //checking error snackbar
     @Test
     fun checkSnackbar()=mainCoroutineRule.runBlockingTest{
 

@@ -6,15 +6,17 @@ import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.fragment.app.testing.withFragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.contrib.RecyclerViewActions
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.filters.MediumTest
 import com.udacity.project4.R
 import com.udacity.project4.androidutil.MainCoroutineRule
 import com.udacity.project4.di.Modules
+import it.xabaras.android.espresso.recyclerviewchildactions.RecyclerViewChildActions.Companion.childOfViewAtPositionWithMatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.core.IsNot.not
@@ -35,9 +37,6 @@ import org.mockito.Mockito.verify
 @MediumTest
 class ReminderListFragmentTest : KoinTest {
 
-//    TODO: test the navigation of the fragments.
-//    TODO: test the displayed data on the UI.
-//    TODO: add testing for the error messages.
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -60,7 +59,7 @@ class ReminderListFragmentTest : KoinTest {
         unloadKoinModules(module.fragmentModule)
     }
 
-
+//check if no data to display
     @Test
     fun checkNoDataVisibiltyTrue() = mainCoroutineRule.runBlockingTest {
 
@@ -77,6 +76,7 @@ class ReminderListFragmentTest : KoinTest {
 
     }
 
+    //check if data available to display
     @Test
     fun checkNoDataVisibiltyFalse() = mainCoroutineRule.runBlockingTest {
 
@@ -93,6 +93,7 @@ class ReminderListFragmentTest : KoinTest {
 
     }
 
+    //testing navigation to saveReminderFragment
     @Test
     fun testNavigationtoAddReminder() = mainCoroutineRule.runBlockingTest {
 
@@ -101,6 +102,7 @@ val navController = mock(NavController::class.java)
         launchFragmentInContainer<ReminderListFragment>(
             themeResId = R.style.AppTheme
         ).withFragment {
+
           Navigation.setViewNavController(requireView(),navController)
         }
 
@@ -108,34 +110,59 @@ val navController = mock(NavController::class.java)
 
         verify(navController).navigate(ReminderListFragmentDirections.toSaveReminder())
 
+    }
+
+    //checkcorrect DataPositioning Within Recycler
+    @Test
+    fun checkDataInsideRecycler() = mainCoroutineRule.runBlockingTest {
+
+
+        launchFragmentInContainer<ReminderListFragment>(
+                themeResId = R.style.AppTheme
+        )
+
+
+
+        onView(withId(R.id.reminderssRecyclerView)).perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+
+                .check( matches(
+
+                                childOfViewAtPositionWithMatcher(
+                                        R.id.title,
+                                        0,
+                                        withText("1")
+                               )))
+
+
+        onView(withId(R.id.reminderssRecyclerView)).perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+
+                .check( matches(
+
+                        childOfViewAtPositionWithMatcher(
+                                       R.id.description,
+                                       0,
+                                      withText("mock")
+                        )))
+
+
+
+        onView(withId(R.id.reminderssRecyclerView)).perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+
+                .check( matches(
+
+                        childOfViewAtPositionWithMatcher(
+                                R.id.locate,
+                                0,
+                                withText("here")
+                        )))
 
     }
 
-//    @Test
-//    fun testLogout() = mainCoroutineRule.runBlockingTest {
-//
-//        var intent = Intent()
-//
-//        var Activity:Context? = null
-//        launchFragmentInContainer<ReminderListFragment>(
-//            themeResId = R.style.AppTheme
-//        ).withFragment {
-//           Activity = requireActivity()
-//        }
-//
-//
-//        // Open the options menu OR open the overflow menu, depending on whether
-//        // the device has a hardware or software overflow menu button.
-//        openActionBarOverflowOrOptionsMenu(
-//            ApplicationProvider.getApplicationContext<Context>())
-//
-//        onView(withId(R.id.clear)).perform(click())
-//
-//
-//
-//        verify(intent).setClass(Activity!!,AuthenticationActivity::class.java)
-//
-//    }
+
+
+
+
+
 
 
 

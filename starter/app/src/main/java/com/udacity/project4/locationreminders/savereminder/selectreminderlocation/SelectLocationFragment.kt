@@ -84,7 +84,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
 
 //        TODO: call this function after the user confirms on the selected location
         binding.saveButton.setOnClickListener {
-            onLocationSelected()
+             onLocationSelected()
         }
 
         return binding.root
@@ -106,28 +106,27 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
         //        TODO: When the user confirms on the selected location,
         //         send back the selected location details to the view model
         //         and navigate back to the previous fragment to save the reminder and add the geofence
-
-if (location != null)
-{
-    lifecycleScope.launch(Dispatchers.Main) {
-        var itemLocation = ""
-        withContext(Dispatchers.IO) {
-            itemLocation=
+    if (location != null)
+    {
+        lifecycleScope.launch(Dispatchers.Main) {
+            var itemLocation = ""
+            withContext(Dispatchers.IO) {
+                itemLocation=
                     try
                     {
                         geocoder.getFromLocation(location?.latitude!!, location?.longitude!!, 1).first()
-                                .run {
-                                    val sb = StringBuilder()
-                                    for (i in 0 until this.maxAddressLineIndex)
-                                    {
-                                        sb.append(this.getAddressLine(i)).append("\n")
-                                    }
-                                    //sb.append(this.locality).append("\n")
-                                    //sb.append(this.thoroughfare).append("\n")
-                                    sb.append(POI ?:this.locality ?: "NotAvailable" )
-                                    //sb.append(this.countryName)
-                                    sb.toString()
+                            .run {
+                                val sb = StringBuilder()
+                                for (i in 0 until this.maxAddressLineIndex)
+                                {
+                                    sb.append(this.getAddressLine(i)).append("\n")
                                 }
+                                //sb.append(this.locality).append("\n")
+                                //sb.append(this.thoroughfare).append("\n")
+                                sb.append(POI ?:this.locality ?: "NotAvailable" )
+                                //sb.append(this.countryName)
+                                sb.toString()
+                            }
                     } catch (e: Exception)
                     {
 
@@ -135,19 +134,21 @@ if (location != null)
                         e.localizedMessage!!
                     }
 
+            }
+
+
+
+            _viewModel.reminderSelectedLocationStr.postValue(itemLocation)
+            _viewModel.latitude.postValue(location?.latitude)
+            _viewModel.longitude.postValue(location?.longitude)
+
+            _viewModel.navigationCommand.postValue(NavigationCommand.Back)
+
+
         }
-
-
-
-        _viewModel.reminderSelectedLocationStr.postValue(itemLocation)
-        _viewModel.latitude.postValue(location?.latitude)
-        _viewModel.longitude.postValue(location?.longitude)
-
-        _viewModel.navigationCommand.postValue(NavigationCommand.Back)
-
-
     }
-}
+
+
 
 
 
@@ -157,6 +158,7 @@ if (location != null)
     {
         super.onResume()
         getUserLocation()
+
         Log.d("onStart", " started")
     }
 
