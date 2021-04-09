@@ -98,7 +98,7 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun testShowLoading()= mainCoroutineRule.runBlockingTest {
+    fun check_loading()= mainCoroutineRule.runBlockingTest {
 
         val assertReminder = reminderDataSource.item1
         val testReminder = reminderDataSource.DTOtoReminderDataItem(mutableListOf(assertReminder))
@@ -166,5 +166,6 @@ class SaveReminderViewModelTest {
         }
 
     }
+
 
 }

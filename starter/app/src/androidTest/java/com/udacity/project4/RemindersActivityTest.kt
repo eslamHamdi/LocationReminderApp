@@ -1,5 +1,6 @@
 package com.udacity.project4
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -30,6 +31,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.unloadKoinModules
@@ -41,13 +43,16 @@ import org.koin.test.inject
 @LargeTest
 //END TO END test to black box test the app
 class RemindersActivityTest :
-   KoinTest {// Extended Koin Test - embed autoclose @after method to close Koin after every test
+   KoinTest
+{// Extended Koin Test - embed autoclose @after method to close Koin after every test
 
     private lateinit var repository: ReminderDataSource
     private val dataBindingIdlingResource = DataBindingIdlingResource()
 
-    val saveReminderViewModel:SaveReminderViewModel by inject()
+    val saveReminderViewModel: SaveReminderViewModel by inject()
 
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
 
 
 //    @Rule
@@ -59,8 +64,9 @@ class RemindersActivityTest :
      * at this step we will initialize Koin related code to be able to use it in out testing.
      */
     @Before
-    fun init() {
-       // stopKoin()//stop the original app koin
+    fun init()
+    {
+        // stopKoin()//stop the original app koin
         loadKoinModules(Modules.myModule)
         //Get our real repository
         repository = get()
@@ -71,24 +77,28 @@ class RemindersActivityTest :
 
         //clear the data to start fresh
         runBlocking {
+            saveReminderViewModel.onClear()
             repository.deleteAllReminders()
         }
     }
-@After
-fun tearUp()
-{
-    IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
-    IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
-    unloadKoinModules(Modules.myModule)
-}
+
+    @After
+    fun tearUp()
+    {
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
+        runBlocking { repository.deleteAllReminders() }
+
+        unloadKoinModules(Modules.myModule)
+    }
 
 //    TODO: add End to End testing to the app
 
     @Test
     fun checking_ItemsRetrievedToTheMainScreen() = runBlocking {
 
-        val item1 = ReminderDTO("1","mock","here",5.0,5.0,"a")
-        val item2 = ReminderDTO("2","mock","here",6.0,5.0,"b")
+        val item1 = ReminderDTO("1", "mock", "here", 5.0, 5.0, "a")
+        val item2 = ReminderDTO("2", "mock", "here", 6.0, 5.0, "b")
         repository.saveReminder(item1)
         repository.saveReminder(item2)
         // Start the Tasks screen.
@@ -96,32 +106,32 @@ fun tearUp()
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
         Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
-            .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(1))
+                .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(1))
 
-            .check(
-                ViewAssertions.matches(
+                .check(
+                        ViewAssertions.matches(
 
-                    RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
-                        R.id.title,
-                        1,
-                        ViewMatchers.withText("2")
-                    )
+                                RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
+                                        R.id.title,
+                                        1,
+                                        ViewMatchers.withText("2")
+                                )
+                        )
                 )
-            )
 
         Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
-            .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+                .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
 
-            .check(
-                ViewAssertions.matches(
+                .check(
+                        ViewAssertions.matches(
 
-                    RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
-                        R.id.title,
-                        0,
-                        ViewMatchers.withText("1")
-                    )
+                                RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
+                                        R.id.title,
+                                        0,
+                                        ViewMatchers.withText("1")
+                                )
+                        )
                 )
-            )
 
 
         activityScenario.close()
@@ -129,7 +139,7 @@ fun tearUp()
 
 
     @Test
-    fun checking_NavigationBetweenDifferentFragmentsHostedByThisActivity()= runBlocking {
+    fun checking_NavigationBetweenDifferentFragmentsHostedByThisActivity() = runBlocking {
 
 //        val item1 = ReminderDTO("1","mock","here",5.0,5.0,"a")
 //        val item2 = ReminderDTO("2","mock","here",6.0,5.0,"b")
@@ -155,7 +165,7 @@ fun tearUp()
     }
 
     @Test
-    fun testsaveReminder()=runBlocking {
+    fun testsaveReminder() = runBlocking {
 
 
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
@@ -169,7 +179,7 @@ fun tearUp()
         Espresso.onView(withId(R.id.reminderTitle)).perform(replaceText("NewTitle"))
         Espresso.onView(withId(R.id.reminderDescription)).perform(replaceText("NewDescription"))
 
-       saveReminderViewModel.longitude.postValue(5.0)
+        saveReminderViewModel.longitude.postValue(5.0)
         saveReminderViewModel.latitude.postValue(6.0)
         saveReminderViewModel.reminderSelectedLocationStr.postValue("NewLocation")
 
@@ -178,52 +188,52 @@ fun tearUp()
 
 
         Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
-            .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+                .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
 
-            .check(ViewAssertions.matches(
+                .check(ViewAssertions.matches(
 
-                RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
-                    R.id.title,
-                    0,
-                    ViewMatchers.withText("NewTitle")
+                        RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
+                                R.id.title,
+                                0,
+                                ViewMatchers.withText("NewTitle")
+                        )
+                ))
+
+
+        Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
+                .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+
+                .check(ViewAssertions.matches(
+
+                        RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
+                                R.id.description,
+                                0,
+                                ViewMatchers.withText("NewDescription"))
+                ))
+
+
+        Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
+                .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+
+                .check(ViewAssertions.matches(
+
+                        RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
+                                R.id.locate,
+                                0,
+                                ViewMatchers.withText("NewLocation"))
                 )
-            ))
-
-
-        Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
-            .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
-
-            .check(ViewAssertions.matches(
-
-                RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
-                    R.id.description,
-                    0,
-                    ViewMatchers.withText("NewDescription"))
-            ))
-
-
-        Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
-            .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
-
-            .check(ViewAssertions.matches(
-
-                RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
-                    R.id.locate,
-                    0,
-                    ViewMatchers.withText("NewLocation"))
-            )
-            )
+                )
 
 
         activityScenario.close()
 
     }
 
-     //requires permissions to be enabled
+    //requires permissions to be enabled
     //requires delay suspend function to test save location functionality
     //the main target here to check if the location saved from the fragment and displayed properly
     @Test
-    fun testsaveLocationAtMapFragment()=runBlocking {
+    fun testsaveLocationAtMapFragment() = runBlocking {
 
 
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
@@ -253,40 +263,40 @@ fun tearUp()
 
 
         Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
-            .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+                .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
 
-            .check(ViewAssertions.matches(
+                .check(ViewAssertions.matches(
 
-                RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
-                    R.id.title,
-                    0,
-                    ViewMatchers.withText("NewTitle")
+                        RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
+                                R.id.title,
+                                0,
+                                ViewMatchers.withText("NewTitle")
+                        )
+                ))
+
+
+        Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
+                .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+
+                .check(ViewAssertions.matches(
+
+                        RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
+                                R.id.description,
+                                0,
+                                ViewMatchers.withText("NewDescription"))
+                ))
+
+
+        Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
+                .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
+
+                .check(ViewAssertions.matches(
+
+                        RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
+                                R.id.locate,
+                                0,
+                                isDisplayed()))
                 )
-            ))
-
-
-        Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
-            .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
-
-            .check(ViewAssertions.matches(
-
-                RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
-                    R.id.description,
-                    0,
-                    ViewMatchers.withText("NewDescription"))
-            ))
-
-
-        Espresso.onView(ViewMatchers.withId(R.id.reminderssRecyclerView))
-            .perform(RecyclerViewActions.scrollToPosition<RecyclerView.ViewHolder>(0))
-
-            .check(ViewAssertions.matches(
-
-                RecyclerViewChildActions.childOfViewAtPositionWithMatcher(
-                    R.id.locate,
-                    0,
-                    isDisplayed()))
-            )
 
 
 
@@ -295,7 +305,7 @@ fun tearUp()
     }
 
     @Test
-    fun testsaveReminderToast()=runBlocking {
+    fun testsaveReminderToast() = runBlocking {
 
 
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
@@ -316,7 +326,7 @@ fun tearUp()
         Espresso.onView(ViewMatchers.withId(R.id.saveReminder)).perform(click())
 
         onView(withText(buildToastMessage("Reminder Saved !!"))).inRoot(CustomToastMatcher())
-            .check(matches(isDisplayed()))
+                .check(matches(isDisplayed()))
 
 
 
@@ -325,17 +335,17 @@ fun tearUp()
     }
 
     @Test
-    fun checkingoverFlowMenu() = runBlocking {
+    fun checkingOverFlowMenu() = runBlocking {
 
-        val item1 = ReminderDTO("1","mock","here",5.0,5.0,"a")
-        val item2 = ReminderDTO("2","mock","here",6.0,5.0,"b")
+        val item1 = ReminderDTO("1", "mock", "here", 5.0, 5.0, "a")
+        val item2 = ReminderDTO("2", "mock", "here", 6.0, 5.0, "b")
         repository.saveReminder(item1)
         repository.saveReminder(item2)
         // Start the Tasks screen.
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
-       openActionBarOverflowOrOptionsMenu(ApplicationProvider.getApplicationContext())
+        openActionBarOverflowOrOptionsMenu(ApplicationProvider.getApplicationContext())
 
         onView(withText(R.string.clearlist)).perform(click())
 
@@ -347,7 +357,7 @@ fun tearUp()
 
 
     @Test
-    fun checkToastAtMapFragment()=runBlocking {
+    fun checkToastAtMapFragment() = runBlocking {
 
 
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
@@ -363,21 +373,36 @@ fun tearUp()
 
         Espresso.onView(ViewMatchers.withId(R.id.selectLocation)).perform(click())
 
-
         onView(withText(buildToastMessage("Select a location or Place of Interest"))).inRoot(CustomToastMatcher())
-            .check(matches(isDisplayed()))
-        delay(8000) // to give enough time to get Location needed to test saving the ReminderLocation
+                .check(matches(isDisplayed())).withFailureHandler { error, viewMatcher ->
+                    Espresso.onView(ViewMatchers.withId(R.id.selectLocation)).perform(click())
+                }
 
 
         activityScenario.close()
 
     }
 
+    @Test
+    fun testErrorSnackBar_saveReminderFragment() = runBlocking {
+
+
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
 
 
 
+        Espresso.onView(ViewMatchers.withId(R.id.addReminderFAB)).perform(click())
 
 
+        Espresso.onView(withId(R.id.reminderTitle)).perform(replaceText("NewTitle"))
+        Espresso.onView(withId(R.id.reminderDescription)).perform(replaceText("NewDescription"))
 
 
+        Espresso.onView(ViewMatchers.withId(R.id.saveReminder)).perform(click())
+
+        onView(withId(com.google.android.material.R.id.snackbar_text))
+                .check(matches(withText(R.string.err_select_location)))
+        activityScenario.close()
+    }
 }

@@ -9,10 +9,13 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class SaveReminderViewModel( val dataSource:ReminderDataSource) :
-    BaseViewModel() {
+    BaseViewModel()
+{
     val reminderTitle = MutableLiveData<String>()
     val reminderDescription = MutableLiveData<String>()
     val reminderSelectedLocationStr = MutableLiveData<String>()
@@ -20,10 +23,14 @@ class SaveReminderViewModel( val dataSource:ReminderDataSource) :
     val latitude = MutableLiveData<Double>()
     val longitude = MutableLiveData<Double>()
 
+    private val channel = Channel<String>(Channel.BUFFERED)
+    val eventsFlow = channel.receiveAsFlow()
+
     /**
      * Clear the live data objects to start fresh next time the view model gets called
      */
-    fun onClear() {
+    fun onClear()
+    {
         reminderTitle.value = null
         reminderDescription.value = null
         reminderSelectedLocationStr.value = null
@@ -35,8 +42,10 @@ class SaveReminderViewModel( val dataSource:ReminderDataSource) :
     /**
      * Validate the entered data then saves the reminder data to the DataSource
      */
-    fun validateAndSaveReminder(reminderData: ReminderDataItem) {
-        if (validateEnteredData(reminderData)) {
+    fun validateAndSaveReminder(reminderData: ReminderDataItem)
+    {
+        if (validateEnteredData(reminderData))
+        {
             saveReminder(reminderData)
         }
     }
@@ -44,18 +53,19 @@ class SaveReminderViewModel( val dataSource:ReminderDataSource) :
     /**
      * Save the reminder to the data source
      */
-    fun saveReminder(reminderData: ReminderDataItem) {
+    fun saveReminder(reminderData: ReminderDataItem)
+    {
         showLoading.value = true
         viewModelScope.launch {
             dataSource.saveReminder(
-                ReminderDTO(
-                    reminderData.title,
-                    reminderData.description,
-                    reminderData.location,
-                    reminderData.latitude,
-                    reminderData.longitude,
-                    reminderData.id
-                )
+                    ReminderDTO(
+                            reminderData.title,
+                            reminderData.description,
+                            reminderData.location,
+                            reminderData.latitude,
+                            reminderData.longitude,
+                            reminderData.id
+                    )
             )
             showLoading.value = false
             showToast.value = "Reminder Saved !!"
@@ -66,21 +76,32 @@ class SaveReminderViewModel( val dataSource:ReminderDataSource) :
     /**
      * Validate the entered data and show error to the user if there's any invalid data
      */
-    fun validateEnteredData(reminderData: ReminderDataItem): Boolean {
-        if (reminderData.title.isNullOrEmpty()) {
+    fun validateEnteredData(reminderData: ReminderDataItem): Boolean
+    {
+        if (reminderData.title.isNullOrEmpty())
+        {
             showSnackBarInt.value = R.string.err_enter_title
             return false
         }
 
-        if (reminderData.description.isNullOrEmpty()) {
+        if (reminderData.description.isNullOrEmpty())
+        {
             showSnackBarInt.value = R.string.err_enter_description
             return false
         }
 
-        if (reminderData.location.isNullOrEmpty()) {
+        if (reminderData.location.isNullOrEmpty())
+        {
             showSnackBarInt.value = R.string.err_select_location
             return false
         }
         return true
+    }
+
+    fun mapToastTriggered()
+    {
+        viewModelScope.launch {
+            channel.send("Select a location or Place of Interest")
+        }
     }
 }

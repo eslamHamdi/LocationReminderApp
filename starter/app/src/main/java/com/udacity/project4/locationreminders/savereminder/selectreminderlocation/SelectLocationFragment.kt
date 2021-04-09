@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.ResolvableApiException
@@ -32,10 +33,13 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.LocationUtility
+import com.udacity.project4.utils.observeInLifecycle
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
@@ -58,6 +62,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
     var POI:String? = null
 
 
+    @InternalCoroutinesApi
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View?
@@ -67,6 +72,12 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
+
+        //testing sending one time events with coroutines channels+Flow to be used in future projects
+        _viewModel.eventsFlow.onEach {
+            Toast.makeText(this.requireContext(),it,Toast.LENGTH_SHORT).show()
+        }.observeInLifecycle(this)
+
 
 
 
@@ -90,12 +101,17 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
         return binding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?)
     {
         super.onViewCreated(view, savedInstanceState)
 
         requestPermissions()
         geocoder = Geocoder(this.requireContext())
+
+
+
+
 
 
     }
@@ -319,7 +335,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
             // put a marker to location that the user selected
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
             map.addMarker(MarkerOptions().position(currentLocation))
-            _viewModel.showToast.postValue( "Select a location or Place of Interest")
+            _viewModel.mapToastTriggered()
 
         }
 

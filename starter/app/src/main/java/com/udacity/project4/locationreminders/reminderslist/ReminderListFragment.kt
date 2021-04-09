@@ -38,12 +38,7 @@ class ReminderListFragment : BaseFragment() {
             _viewModel.loadReminders()
         }
 
-//        _viewModel.showNoData.observe(viewLifecycleOwner,{
-//
-//                binding.refreshLayout.isRefreshing = false
-//
-//        }
-//        )
+
 
         return binding.root
     }
