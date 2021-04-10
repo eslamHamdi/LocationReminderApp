@@ -18,7 +18,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
     private var coroutineJob: Job = Job()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + coroutineJob
-
+    val remindersLocalRepository: ReminderDataSource by inject()
 
     companion object {
         private const val JOB_ID = 573
@@ -52,7 +52,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
         //Get the local repository instance
 
 //        Interaction to the repository has to be through a coroutine scope
-        val remindersLocalRepository: ReminderDataSource by inject()
+
         CoroutineScope(coroutineContext).launch(SupervisorJob()) {
             //get the reminder with the request id
             val result = remindersLocalRepository.getReminder(ID)
@@ -69,6 +69,9 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
                         reminderDTO.id
                     )
                 )
+            }else
+            {
+                Log.d(null, "sendNotification: error")
             }
         }
     }
