@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import com.firebase.ui.auth.AuthUI
+import com.google.android.gms.location.GeofencingClient
+import com.google.android.gms.location.LocationServices
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
@@ -19,6 +21,8 @@ class ReminderListFragment : BaseFragment() {
     //use Koin to retrieve the ViewModel instance
     override val _viewModel: RemindersListViewModel by viewModel()
     private lateinit var binding: FragmentRemindersBinding
+    lateinit var geofencingClient: GeofencingClient
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -34,11 +38,8 @@ class ReminderListFragment : BaseFragment() {
         setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
 
-        binding.refreshLayout.setOnRefreshListener {
-            _viewModel.loadReminders()
-        }
 
-
+        geofencingClient = LocationServices.getGeofencingClient(this.requireActivity())
 
         return binding.root
     }
@@ -91,8 +92,19 @@ class ReminderListFragment : BaseFragment() {
             }
             R.id.clear ->{
 
+                //remove geofences associated with the deleted reminders
+
+                _viewModel.remindersList.value?.let{
+
+                    val geolist = mutableListOf<String>()
+                    it.forEach { item->
+                        geolist.add(item.id)
+                    }
+
+                    geofencingClient.removeGeofences(geolist)
+                }
                 _viewModel.deleteAllItems()
-                _viewModel.loadReminders()
+               _viewModel.loadReminders()
 
             }
         }

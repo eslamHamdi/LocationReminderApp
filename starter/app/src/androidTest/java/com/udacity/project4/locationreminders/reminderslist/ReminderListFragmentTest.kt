@@ -31,7 +31,7 @@ import org.koin.test.inject
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 
-//@RunWith(AndroidJUnit4ClassRunner::class)
+
 @ExperimentalCoroutinesApi
 //UI Testing
 @MediumTest

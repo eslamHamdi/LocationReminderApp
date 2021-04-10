@@ -33,7 +33,6 @@ class SaveReminderFragment : BaseFragment() {
     private val runningQOrLater = android.os.Build.VERSION.SDK_INT >=
             android.os.Build.VERSION_CODES.Q
     private val GEOFENCE_RADIUS = 200f
-    private val GEOFENCE_ID = "SOME_GEOFENCE_ID"
     private var geofencingClient: GeofencingClient? = null
 
 

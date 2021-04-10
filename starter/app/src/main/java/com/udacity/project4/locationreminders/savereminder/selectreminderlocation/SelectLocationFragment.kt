@@ -333,7 +333,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback,EasyPermission
             val zoom = 18f
             // zoom to the user location after taking his permission
             // put a marker to location that the user selected
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoom))
             map.addMarker(MarkerOptions().position(currentLocation))
             _viewModel.mapToastTriggered()
 

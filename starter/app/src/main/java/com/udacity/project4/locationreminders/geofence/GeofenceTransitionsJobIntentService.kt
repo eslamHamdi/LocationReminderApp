@@ -73,4 +73,11 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
         }
     }
 
+    override fun onStopCurrentWork(): Boolean
+    {
+        return super.onStopCurrentWork()
+    }
+
+
+
 }

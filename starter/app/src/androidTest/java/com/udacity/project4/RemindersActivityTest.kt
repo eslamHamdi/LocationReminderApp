@@ -16,10 +16,7 @@ import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.filters.LargeTest
-import com.udacity.project4.androidutil.CustomToastMatcher
-import com.udacity.project4.androidutil.DataBindingIdlingResource
-import com.udacity.project4.androidutil.buildToastMessage
-import com.udacity.project4.androidutil.monitorActivity
+import com.udacity.project4.androidutil.*
 import com.udacity.project4.di.Modules
 import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
@@ -27,7 +24,6 @@ import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.EspressoIdlingResource
 import it.xabaras.android.espresso.recyclerviewchildactions.RecyclerViewChildActions
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -230,7 +226,7 @@ class RemindersActivityTest :
     }
 
     //requires permissions to be enabled
-    //requires delay suspend function to test save location functionality
+    //requires while loop to test save location functionality
     //the main target here to check if the location saved from the fragment and displayed properly
     @Test
     fun testsaveLocationAtMapFragment() = runBlocking {
@@ -249,16 +245,16 @@ class RemindersActivityTest :
 
         Espresso.onView(ViewMatchers.withId(R.id.selectLocation)).perform(click())
 
+        //adaptable loop according to  location update speed
+        while (saveReminderViewModel.reminderSelectedLocationStr.getOrAwaitValue() == null)
+        {
+            Espresso.onView(ViewMatchers.withId(R.id.save_button)).perform(click())
+        }
 
-
-        delay(8000) // to give enough time to get Location needed to test saving the ReminderLocation
-
-        Espresso.onView(ViewMatchers.withId(R.id.save_button)).perform(click())
 
 
 
         Espresso.onView(ViewMatchers.withId(R.id.saveReminder)).perform(click())
-
 
 
 

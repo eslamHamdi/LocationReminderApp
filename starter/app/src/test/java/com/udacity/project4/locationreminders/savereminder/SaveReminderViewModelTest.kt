@@ -2,7 +2,6 @@ package com.udacity.project4.locationreminders.savereminder
 
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth
 import com.udacity.project4.R
 import com.udacity.project4.base.NavigationCommand
@@ -15,11 +14,9 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
 @ExperimentalCoroutinesApi
-@RunWith(AndroidJUnit4::class)
 @Config(sdk = [Build.VERSION_CODES.O])
 class SaveReminderViewModelTest {
 
@@ -97,7 +94,7 @@ class SaveReminderViewModelTest {
 
     }
 
-    @Test
+    @Test //progressBar
     fun check_loading()= mainCoroutineRule.runBlockingTest {
 
         val assertReminder = reminderDataSource.item1
@@ -141,7 +138,7 @@ class SaveReminderViewModelTest {
 
     }
 
-    @Test
+    @Test //error snackBar
     fun validateEnteredDataShowSnackbar()
     {
         val testList = reminderDataSource
