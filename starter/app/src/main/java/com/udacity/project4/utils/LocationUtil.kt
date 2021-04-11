@@ -34,7 +34,7 @@ private lateinit var pendingIntent:PendingIntent
     {
         return GeofencingRequest.Builder()
                 .addGeofence(geofence!!)
-                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_DWELL)
                 .build()
     }
 
@@ -44,7 +44,7 @@ private lateinit var pendingIntent:PendingIntent
                 .setCircularRegion(latLng.latitude, latLng.longitude, radius)
                 .setRequestId(ID)
                 .setTransitionTypes(transitionTypes)
-                .setLoiteringDelay(5000)
+                .setLoiteringDelay(3000000)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .build()
     }
